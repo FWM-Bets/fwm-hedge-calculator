@@ -8,7 +8,7 @@
   "theme_color": "#0c0f10",
   "icons": [
     {
-      "src": "fwm_bets_logo_transparent.png",
+      "src": "fwm_bets_logo_favicon.png",
       "sizes": "512x512",
       "type": "image/png"
       "purpose": "any maskable"
