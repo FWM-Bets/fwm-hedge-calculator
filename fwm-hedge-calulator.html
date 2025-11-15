@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FWM Hedge Calculator</title>
+<style>
+    body {
+        background: #0c0f10;
+        color: #e8e8e8;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 850px;
+        margin: auto;
+        background: #111517;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #1f2a1f;
+    }
+
+    h1 {
+        text-align: center;
+        color: #5AFF00;
+        margin-bottom: 25px;
+        font-size: 40px;
+        font-weight: 800;
+    }
+
+    .logo-img {
+    display: block;
+    margin: 0 auto 12px auto;
+    width: 220px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0px 0px 15px #5AFF00FF);
+    
+}
+
+@keyframes glowPulse {
+    0% { filter: drop-shadow(0px 0px 6px #5AFF0066); }
+    50% { filter: drop-shadow(0px 0px 16px #5AFF00FF); }
+    100% { filter: drop-shadow(0px 0px 6px #5AFF0066); }
+}
+
+.brand-tagline {
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 15px;
+    margin-top: -20px;
+    margin-bottom: 32px;
+    opacity: 0.85;
+    font-weight: 600;
+    font-style: italic;
+}
+
+    label {
+        font-size: 15px;
+        display: block;
+        margin-bottom: 6px;
+        color: #e5e5e5;
+        font-weight: bold;
+    }
+
+    input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 6px;
+        border: none;
+        outline: none;
+        font-size: 18px;
+        margin-bottom: 22px;
+        background: #1a1f21;
+        color: #5AFF00;
+    }
+
+    .results-box {
+        background: #001A00;
+        border: 1px solid #09320a;
+        border-radius: 10px;
+        padding: 18px;
+        font-size: 18px;
+        margin-top: 22px;
+        line-height: 1.7rem;
+        display: none; /* 🔹 hide until valid inputs */
+    }
+
+    .results-box span {
+        font-weight: bold;
+        color: #5AFF00;
+    }
+
+    .reset-btn {
+        margin-top: 22px;
+        width: 160px;
+        background: #5AFF00;
+        border: none;
+        padding: 14px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        color: #000;
+    }
+
+    .helper-box {
+        font-size: 14px;
+        background: #141414;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 18px;
+        opacity: 0.85;
+        font-style: italic;
+        line-height: 1.45rem;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <img src="fwm_bets_logo_transparent.png" class="logo-img" alt="FWM Collects Logo">
+
+    <h1>Hedge Calculator</h1>
+    <p class="brand-tagline">Powered by FWM Bets™ — Lock the Bag 🔒💰</p>
+
+    <label>My Bet Amount</label>
+    <input type="number" id="betAmount" placeholder="e.g. 100">
+
+    <label>My Odds (American)</label>
+    <input type="number" id="origOdds" placeholder="e.g. -150 or +200">
+
+    <label>Hedge Odds (Opposite Side, American)</label>
+    <input type="number" id="hedgeOdds" placeholder="e.g. +250 or -135">
+
+    <div class="results-box" id="results">
+        Hedge Amount: <span id="hedgeAmount">$0.00</span><br>
+        Total Bet Amount: <span id="totalBet">$0.00</span><br>
+        Total Payout: <span id="totalPayout">$0.00</span><br><br>
+        Hedge Profit: <span id="hedgeProfit">$0.00</span>
+    </div>
+
+    <button class="reset-btn" onclick="resetCalc()">RESET</button>
+
+    <div class="helper-box">
+        • My Odds: Represents the odds on your bet slip<br>
+        • Bet Amount: How much you risked<br>
+        • Hedge Odds: Opposite side ML (current line or another book)<br>
+        • Hedge Amount: How much to put on the opponent to guarantee profit<br>
+        • Hedge Profit = Total Payout – Total Bet Amount
+    </div>
+
+</div>
+
+<script>
+function profitPerUnit(odds) {
+    if (odds > 0) {
+        return odds / 100;          // e.g. +150 → 1.5 profit per 1 stake
+    } else {
+        return 100 / Math.abs(odds); // e.g. -150 → 100/150 profit per 1 stake
+    }
+}
+
+function calculate() {
+    const betAmount = parseFloat(document.getElementById("betAmount").value);
+    const origOdds = parseFloat(document.getElementById("origOdds").value);
+    const hedgeOdds = parseFloat(document.getElementById("hedgeOdds").value);
+    const resultsBox = document.getElementById("results");
+
+    // If any missing or invalid → hide results and stop
+    if (isNaN(betAmount) || isNaN(origOdds) || isNaN(hedgeOdds)) {
+        resultsBox.style.display = "none";
+        return;
+    }
+
+    const pOrig = profitPerUnit(origOdds);   // profit per 1 unit on original
+    const pHedge = profitPerUnit(hedgeOdds); // profit per 1 unit on hedge
+
+    const profitOriginal = betAmount * pOrig;
+
+    // 🔹 Equal-profit hedge formula (Action Network style)
+    const hedgeAmount = (profitOriginal + betAmount) / (pHedge + 1);
+
+    const profit = profitOriginal - hedgeAmount;           // same both sides
+    const totalBet = betAmount + hedgeAmount;
+    const totalPayout = totalBet + profit;
+
+    // Update UI
+    document.getElementById("hedgeAmount").textContent = `$${hedgeAmount.toFixed(2)}`;
+    document.getElementById("totalBet").textContent = `$${totalBet.toFixed(2)}`;
+    document.getElementById("totalPayout").textContent = `$${totalPayout.toFixed(2)}`;
+    document.getElementById("hedgeProfit").textContent = `$${profit.toFixed(2)}`;
+
+    resultsBox.style.display = "block";
+}
+
+document.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", calculate);
+});
+
+function resetCalc() {
+    document.getElementById("betAmount").value = '';
+    document.getElementById("origOdds").value = '';
+    document.getElementById("hedgeOdds").value = '';
+    document.getElementById("results").style.display = "none";
+}
+</script>
+
+</body>
+</html>
