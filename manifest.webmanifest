@@ -1,0 +1,16 @@
+{
+  "name": "FWM Hedge Calculator",
+  "short_name": "FWM Bets",
+  "description": "Sports Betting Hedge Calculator by FWM Bets",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0c0f10",
+  "theme_color": "#0c0f10",
+  "icons": [
+    {
+      "src": "fwm_beta_logo_favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
