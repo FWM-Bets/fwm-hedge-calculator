@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FWM Hedge Calculator</title>
-<!-- Favicon -->
-<link rel="icon" type="image/png" href="fwm_bets_logo_transparent.png?v=1">
+
+<!-- Favicon + App Icon -->
+<link rel="icon" type="image/png" href="fwm_bets_logo_favicon?v=1">
 <link rel="apple-touch-icon" sizes="512x512" href="fwm_bets_logo_favicon.png">
-<!-- PWA App -->
+
+<!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0c0f10">
 
@@ -15,21 +17,8 @@
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
-  
-// SPLASH SCREEN CONTROL
-window.addEventListener("load", () => {
-  const splash = document.getElementById("splash-screen");
-  if (!splash) return;
-  
-  setTimeout(() => {
-    splash.style.opacity = "0";
-    setTimeout(() => {
-      splash.style.display = "none";
-    }, 700); // fade-out duration
-  }, 1000); // how long splash stays visible
-});
-  
 </script>
+
 <style>
     body {
         background: #0c0f10;
@@ -37,40 +26,7 @@ window.addEventListener("load", () => {
         font-family: Arial, sans-serif;
         padding: 20px;
     }
-/* Splash Screen */
-#splash-screen {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: #0c0f10;
-    z-index: 9999;
-    transition: opacity 0.6s ease-out;
-}
 
-.splash-logo {
-    width: 200px;
-    height: auto;
-    filter: drop-shadow(0px 0px 15px #5AFF00);
-}
-
-.splash-tagline {
-    margin-top: 18px;
-    font-size: 22px;
-    color: #5AFF00;
-    font-weight: bold;
-    opacity: 0.9;
-}
-
-/* Hide splash once loaded */
-body.loaded #splash-screen {
-    opacity: 0;
-    pointer-events: none;
-}
-  
     .container {
         max-width: 850px;
         margin: auto;
@@ -89,31 +45,24 @@ body.loaded #splash-screen {
     }
 
     .logo-img {
-    display: block;
-    margin: 0 auto 12px auto;
-    width: 220px;
-    height: auto;
-    object-fit: contain;
-    filter: drop-shadow(0px 0px 15px #5AFF00FF);
-    
-}
+        display: block;
+        margin: 0 auto 12px auto;
+        width: 220px;
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0px 0px 15px #5AFF00FF);
+    }
 
-@keyframes glowPulse {
-    0% { filter: drop-shadow(0px 0px 6px #5AFF0066); }
-    50% { filter: drop-shadow(0px 0px 16px #5AFF00FF); }
-    100% { filter: drop-shadow(0px 0px 6px #5AFF0066); }
-}
-
-.brand-tagline {
-    text-align: center;
-    color: #FFFFFF;
-    font-size: 15px;
-    margin-top: -20px;
-    margin-bottom: 32px;
-    opacity: 0.85;
-    font-weight: 600;
-    font-style: italic;
-}
+    .brand-tagline {
+        text-align: center;
+        color: #FFFFFF;
+        font-size: 15px;
+        margin-top: -20px;
+        margin-bottom: 32px;
+        opacity: 0.85;
+        font-weight: 600;
+        font-style: italic;
+    }
 
     label {
         font-size: 15px;
@@ -143,7 +92,7 @@ body.loaded #splash-screen {
         font-size: 18px;
         margin-top: 22px;
         line-height: 1.7rem;
-        display: none; /* 🔹 hide until valid inputs */
+        display: none;
     }
 
     .results-box span {
@@ -177,19 +126,14 @@ body.loaded #splash-screen {
         font-style: italic;
         line-height: 1.45rem;
     }
-
 </style>
 </head>
+
 <body>
-<!-- Splash Screen -->
-<div id="splash-screen">
-    <img src="fwm_bets_logo_favicon.png" class="splash-logo" alt="Logo">
-    <div class="splash-tagline">Lock the Bag 🔒💰</div>
-</div>
-  
+
 <div class="container">
 
-    <img src="fwm_bets_logo_transparent.png" class="logo-img" alt="FWM Collects Logo">
+    <img src="fwm_bets_logo_transparent.png" class="logo-img" alt="FWM Bets Logo">
 
     <h1>Hedge Calculator</h1>
     <p class="brand-tagline">Powered by FWM Bets™ — Lock the Bag 🔒💰</p>
@@ -224,58 +168,53 @@ body.loaded #splash-screen {
 
 <script>
 function profitPerUnit(odds) {
-    if (odds > 0) {
-        return odds / 100;          // e.g. +150 → 1.5 profit per 1 stake
-    } else {
-        return 100 / Math.abs(odds); // e.g. -150 → 100/150 profit per 1 stake
-    }
+    return odds > 0 ? odds / 100 : 100 / Math.abs(odds);
 }
 
 function calculate() {
-    const betAmount = parseFloat(document.getElementById("betAmount").value);
-    const origOdds = parseFloat(document.getElementById("origOdds").value);
-    const hedgeOdds = parseFloat(document.getElementById("hedgeOdds").value);
-    const resultsBox = document.getElementById("results");
+    const betAmount = parseFloat(betAmountEl.value);
+    const origOdds = parseFloat(origOddsEl.value);
+    const hedgeOdds = parseFloat(hedgeOddsEl.value);
 
-    // If any missing or invalid → hide results and stop
     if (isNaN(betAmount) || isNaN(origOdds) || isNaN(hedgeOdds)) {
         resultsBox.style.display = "none";
         return;
     }
 
-    const pOrig = profitPerUnit(origOdds);   // profit per 1 unit on original
-    const pHedge = profitPerUnit(hedgeOdds); // profit per 1 unit on hedge
+    const pOrig = profitPerUnit(origOdds);
+    const pHedge = profitPerUnit(hedgeOdds);
 
     const profitOriginal = betAmount * pOrig;
-
-    // 🔹 Equal-profit hedge formula (Action Network style)
     const hedgeAmount = (profitOriginal + betAmount) / (pHedge + 1);
-
-    const profit = profitOriginal - hedgeAmount;           // same both sides
+    const profit = profitOriginal - hedgeAmount;
     const totalBet = betAmount + hedgeAmount;
     const totalPayout = totalBet + profit;
 
-    // Update UI
-    document.getElementById("hedgeAmount").textContent = `$${hedgeAmount.toFixed(2)}`;
-    document.getElementById("totalBet").textContent = `$${totalBet.toFixed(2)}`;
-    document.getElementById("totalPayout").textContent = `$${totalPayout.toFixed(2)}`;
-    document.getElementById("hedgeProfit").textContent = `$${profit.toFixed(2)}`;
+    hedgeAmountEl.textContent = `$${hedgeAmount.toFixed(2)}`;
+    totalBetEl.textContent = `$${totalBet.toFixed(2)}`;
+    totalPayoutEl.textContent = `$${totalPayout.toFixed(2)}`;
+    hedgeProfitEl.textContent = `$${profit.toFixed(2)}`;
 
     resultsBox.style.display = "block";
 }
 
-document.querySelectorAll("input").forEach(inp => {
-    inp.addEventListener("input", calculate);
-});
+const betAmountEl = document.getElementById("betAmount");
+const origOddsEl = document.getElementById("origOdds");
+const hedgeOddsEl = document.getElementById("hedgeOdds");
+const resultsBox = document.getElementById("results");
+const hedgeAmountEl = document.getElementById("hedgeAmount");
+const totalBetEl = document.getElementById("totalBet");
+const totalPayoutEl = document.getElementById("totalPayout");
+const hedgeProfitEl = document.getElementById("hedgeProfit");
+
+document.querySelectorAll("input").forEach(i => i.addEventListener("input", calculate));
 
 function resetCalc() {
-    document.getElementById("betAmount").value = '';
-    document.getElementById("origOdds").value = '';
-    document.getElementById("hedgeOdds").value = '';
-    document.getElementById("results").style.display = "none";
+    betAmountEl.value = '';
+    origOddsEl.value = '';
+    hedgeOddsEl.value = '';
+    resultsBox.style.display = "none";
 }
-  // 🔥 Mark page as loaded
-document.body.classList.add("loaded");
 </script>
 
 </body>
