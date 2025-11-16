@@ -6,7 +6,6 @@
   "display": "standalone",
   "background_color": "#0c0f10",
   "theme_color": "#0c0f10",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "fwm_bets_logo_favicon.png",
